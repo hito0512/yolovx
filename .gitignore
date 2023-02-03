@@ -4,4 +4,4 @@ logs
 prune_model
 *.h5
 .history/
-weights/
+weights/yolox_*/
