@@ -542,12 +542,8 @@ class YOLOXHead(nn.Module):
             total_num_anchors,
             num_gt,
         )
-<<<<<<< HEAD
         # 根据刚才筛选的anchor位置，可以将网络预测的候选检测框位置bboxes_preds、前景背景目标分数obj_preds、类别分数cls_preds等信息，提取出来。
         # bboxes_preds_per_image : 就是候选框的信息
-=======
-
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         bboxes_preds_per_image = bboxes_preds_per_image[fg_mask]
         cls_preds_ = cls_preds[batch_idx][fg_mask]
         obj_preds_ = obj_preds[batch_idx][fg_mask]
@@ -556,11 +552,7 @@ class YOLOXHead(nn.Module):
         if mode == "cpu":
             gt_bboxes_per_image = gt_bboxes_per_image.cpu()
             bboxes_preds_per_image = bboxes_preds_per_image.cpu()
-<<<<<<< HEAD
         # 计算每个gtbox和prebox之间的iou
-=======
-
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         pair_wise_ious = bboxes_iou(gt_bboxes_per_image, bboxes_preds_per_image, False)
 
         gt_cls_per_image = (
@@ -568,23 +560,14 @@ class YOLOXHead(nn.Module):
             .float()
             .unsqueeze(1)
             .repeat(1, num_in_boxes_anchor, 1)
-<<<<<<< HEAD
         )# 
         pair_wise_ious_loss = -torch.log(pair_wise_ious + 1e-8) # 计算位置损失
-=======
-        )
-        pair_wise_ious_loss = -torch.log(pair_wise_ious + 1e-8)
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
 
         if mode == "cpu":
             cls_preds_, obj_preds_ = cls_preds_.cpu(), obj_preds_.cpu()
 
         with torch.cuda.amp.autocast(enabled=False):
-<<<<<<< HEAD
             cls_preds_ = (   # 将类别的条件概率和目标的先验概率做乘积，得到目标的类别分数。
-=======
-            cls_preds_ = (
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
                 cls_preds_.float().unsqueeze(0).repeat(num_gt, 1, 1).sigmoid_()
                 * obj_preds_.float().unsqueeze(0).repeat(num_gt, 1, 1).sigmoid_()
             )
@@ -670,7 +653,6 @@ class YOLOXHead(nn.Module):
         b_t = y_centers_per_image - gt_bboxes_per_image_t
         b_b = gt_bboxes_per_image_b - y_centers_per_image
         bbox_deltas = torch.stack([b_l, b_t, b_r, b_b], 2)
-<<<<<<< HEAD
         # [https://zhuanlan.zhihu.com/p/397993315]
         is_in_boxes = bbox_deltas.min(dim=-1).values > 0.0  # 取每一行ltbr中的最小值，并判断是否大于0
         is_in_boxes_all = is_in_boxes.sum(dim=0) > 0   # 因为ancor box的中心点，只有落在矩形范围内，这时的b_l，b_r，b_t，b_b都大于0。
@@ -678,15 +660,6 @@ class YOLOXHead(nn.Module):
 
         center_radius = 2.5
         # 以groundtruth中心点为基准，设置边长为5的正方形，挑选在正方形内的所有锚框。
-=======
-
-        is_in_boxes = bbox_deltas.min(dim=-1).values > 0.0
-        is_in_boxes_all = is_in_boxes.sum(dim=0) > 0
-        # in fixed center
-
-        center_radius = 2.5
-
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         gt_bboxes_per_image_l = (gt_bboxes_per_image[:, 0]).unsqueeze(1).repeat(
             1, total_num_anchors
         ) - center_radius * expanded_strides_per_image.unsqueeze(0)
@@ -699,11 +672,7 @@ class YOLOXHead(nn.Module):
         gt_bboxes_per_image_b = (gt_bboxes_per_image[:, 1]).unsqueeze(1).repeat(
             1, total_num_anchors
         ) + center_radius * expanded_strides_per_image.unsqueeze(0)
-<<<<<<< HEAD
         # 找出所有中心点（x_center，y_center）在正方形内的锚框。
-=======
-
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         c_l = x_centers_per_image - gt_bboxes_per_image_l
         c_r = gt_bboxes_per_image_r - x_centers_per_image
         c_t = y_centers_per_image - gt_bboxes_per_image_t
@@ -712,27 +681,17 @@ class YOLOXHead(nn.Module):
         is_in_centers = center_deltas.min(dim=-1).values > 0.0
         is_in_centers_all = is_in_centers.sum(dim=0) > 0
 
-<<<<<<< HEAD
         # in boxes and in centers  通过这两种方式筛选anchor
         is_in_boxes_anchor = is_in_boxes_all | is_in_centers_all
         #   is_in_boxes     [num_gt, n_anchors_all]
         is_in_boxes_and_center = (
             is_in_boxes[:, is_in_boxes_anchor] & is_in_centers[:, is_in_boxes_anchor]
         ) # 初步完成筛选
-=======
-        # in boxes and in centers
-        is_in_boxes_anchor = is_in_boxes_all | is_in_centers_all
-
-        is_in_boxes_and_center = (
-            is_in_boxes[:, is_in_boxes_anchor] & is_in_centers[:, is_in_boxes_anchor]
-        )
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         return is_in_boxes_anchor, is_in_boxes_and_center
 
     def dynamic_k_matching(self, cost, pair_wise_ious, gt_classes, num_gt, fg_mask):
         # Dynamic K
         # ---------------------------------------------------------------
-<<<<<<< HEAD
         matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)  
 
         ious_in_boxes_matrix = pair_wise_ious
@@ -753,39 +712,12 @@ class YOLOXHead(nn.Module):
             _, cost_argmin = torch.min(cost[:, anchor_matching_gt > 1], dim=0)
             matching_matrix[:, anchor_matching_gt > 1] *= 0   # 这里将共用的列先置为0
             matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1  # 然后将 >1 的置为1，这样就不存在共用的了。
-=======
-        matching_matrix = torch.zeros_like(cost, dtype=torch.uint8)
-
-        ious_in_boxes_matrix = pair_wise_ious
-        n_candidate_k = min(10, ious_in_boxes_matrix.size(1))
-        topk_ious, _ = torch.topk(ious_in_boxes_matrix, n_candidate_k, dim=1)
-        dynamic_ks = torch.clamp(topk_ious.sum(1).int(), min=1)
-        dynamic_ks = dynamic_ks.tolist()
-        for gt_idx in range(num_gt):
-            _, pos_idx = torch.topk(
-                cost[gt_idx], k=dynamic_ks[gt_idx], largest=False
-            )
-            matching_matrix[gt_idx][pos_idx] = 1
-
-        del topk_ious, dynamic_ks, pos_idx
-
-        anchor_matching_gt = matching_matrix.sum(0)
-        if (anchor_matching_gt > 1).sum() > 0:
-            _, cost_argmin = torch.min(cost[:, anchor_matching_gt > 1], dim=0)
-            matching_matrix[:, anchor_matching_gt > 1] *= 0
-            matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         fg_mask_inboxes = matching_matrix.sum(0) > 0
         num_fg = fg_mask_inboxes.sum().item()
 
         fg_mask[fg_mask.clone()] = fg_mask_inboxes
-<<<<<<< HEAD
         # matching_matrix 中 为1的地方就是最合适的候选框
         matched_gt_inds = matching_matrix[:, fg_mask_inboxes].argmax(0)  # 
-=======
-
-        matched_gt_inds = matching_matrix[:, fg_mask_inboxes].argmax(0)
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
         gt_matched_classes = gt_classes[matched_gt_inds]
 
         pred_ious_this_matching = (matching_matrix * pair_wise_ious).sum(0)[
