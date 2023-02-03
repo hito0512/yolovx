@@ -4,7 +4,7 @@ logs
 prune_model
 <<<<<<< HEAD
 *.h5
-*.history/
+.history/
 =======
 *.h5
 >>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
