@@ -24,11 +24,7 @@ def convert_h5_to_pb(h5_model_name,pb_model_name):
     model = tf.keras.models.load_model(h5_model_name,compile=False)  
     full_model = tf.function(lambda inputs: model(inputs))
     tensor_spec=[tf.TensorSpec(tensor.shape,tensor.dtype) for tensor in model.inputs]
-<<<<<<< HEAD
     full_model = full_model.get_concrete_function(tensor_spec)
-=======
-    full_model = full_model.get_concrete_function(*tensor_spec)
->>>>>>> 1ef4b824c143e21a51fcb1147e98c2e186476d3c
 
     frozen_func = convert_variables_to_constants_v2(full_model)
     graph_def=frozen_func.graph.as_graph_def()
